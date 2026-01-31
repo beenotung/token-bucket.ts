@@ -1,6 +1,6 @@
 {
   "name": "token-bucket.ts",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "commonjs",
   "description": "A simple, lightweight token bucket rate limiter for TypeScript/JavaScript.",
   "keywords": [
