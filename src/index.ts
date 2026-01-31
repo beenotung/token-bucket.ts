@@ -1,7 +1,7 @@
 export type TokenBucketOptions = {
   capacity: number
   interval: number // in milliseconds
-  fill?: number // default 1
+  refill?: number // default 1
   initial?: number // default size of capacity
   cooldown?: number // minimum time between consumes (in milliseconds), default to 0 (no cooldown)
 }
@@ -23,7 +23,7 @@ type BucketState = {
 export class TokenBucket {
   capacity: number
   interval: number // in milliseconds
-  fill: number
+  refill: number
   initial: number
   cooldown: number // in milliseconds
   private buckets: Map<string, BucketState> = new Map()
@@ -31,7 +31,7 @@ export class TokenBucket {
   constructor(options: TokenBucketOptions) {
     this.capacity = options.capacity
     this.interval = options.interval
-    this.fill = options.fill ?? 1
+    this.refill = options.refill ?? 1
     this.initial = options.initial ?? this.capacity
     this.cooldown = options.cooldown ?? 0
   }
@@ -52,7 +52,7 @@ export class TokenBucket {
   private refill_bucket(bucket: BucketState): void {
     let now = Date.now()
     let elapsed = now - bucket.last_refill
-    let refill_amount = (elapsed / this.interval) * this.fill
+    let refill_amount = (elapsed / this.interval) * this.refill
     bucket.tokens = Math.min(this.capacity, bucket.tokens + refill_amount)
     bucket.last_refill = now
   }
@@ -60,7 +60,7 @@ export class TokenBucket {
   private calc_token_wait_time(tokens: number, amount: number): number {
     if (tokens >= amount) return 0
     let needed = amount - tokens
-    return (needed / this.fill) * this.interval
+    return (needed / this.refill) * this.interval
   }
 
   private calc_cooldown_wait_time(bucket: BucketState): number {

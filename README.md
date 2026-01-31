@@ -70,7 +70,7 @@ bucket.prune()
 | ---------- | ------ | -------- | --------------------------------------------- |
 | `capacity` | number | required | Maximum tokens in bucket                      |
 | `interval` | number | required | Refill interval in milliseconds               |
-| `fill`     | number | 1        | Tokens to add per interval                    |
+| `refill`   | number | 1        | Tokens to add per interval                    |
 | `initial`  | number | capacity | Starting tokens for new buckets               |
 | `cooldown` | number | 0        | Minimum time (ms) between successful consumes |
 

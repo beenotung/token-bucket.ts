@@ -10,9 +10,9 @@ describe('TokenBucket', () => {
       expect(bucket.interval).to.equal(1000)
     })
 
-    it('should default fill to 1', () => {
+    it('should default refill to 1', () => {
       let bucket = new TokenBucket({ capacity: 10, interval: 1000 })
-      expect(bucket.fill).to.equal(1)
+      expect(bucket.refill).to.equal(1)
     })
 
     it('should default initial to capacity', () => {
@@ -20,9 +20,9 @@ describe('TokenBucket', () => {
       expect(bucket.initial).to.equal(10)
     })
 
-    it('should allow custom fill', () => {
-      let bucket = new TokenBucket({ capacity: 10, interval: 1000, fill: 2 })
-      expect(bucket.fill).to.equal(2)
+    it('should allow custom refill', () => {
+      let bucket = new TokenBucket({ capacity: 10, interval: 1000, refill: 2 })
+      expect(bucket.refill).to.equal(2)
     })
 
     it('should allow custom initial', () => {
@@ -284,8 +284,8 @@ describe('TokenBucket', () => {
       expect(result.wait_time).to.equal(100) // only 2 capacity, all used up
     })
 
-    it('should refill with custom fill rate', () => {
-      let bucket = new TokenBucket({ capacity: 10, interval: 100, fill: 2 })
+    it('should refill with custom refill rate', () => {
+      let bucket = new TokenBucket({ capacity: 10, interval: 100, refill: 2 })
       bucket.consume('key1', 10) // use all tokens
       clock.tick(150) // wait 1.5 intervals, should get 3 tokens (1.5 * 2)
       let result = bucket.consume('key1', 3)
