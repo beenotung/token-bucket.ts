@@ -17,7 +17,7 @@
     "build": "rimraf dist && tsc -p . && rimraf dist/tsconfig.tsbuildinfo dist/*.test.d.ts dist/*.test.js dist/*.spec.d.ts dist/*.spec.js",
     "tsc": "tsc -p .",
     "dev": "tsc -p . --watch",
-    "mocha": "rm -f *.js && ts-mocha \"*.{test,spec}.ts\""
+    "mocha": "ts-mocha \"src/**/*.{test,spec}.ts\""
   },
   "devDependencies": {
     "@types/chai": "^4.3.20",
