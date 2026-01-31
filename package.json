@@ -12,15 +12,21 @@
     "dist"
   ],
   "scripts": {
-    "test": "tsc --noEmit",
+    "test": "npm run mocha && tsc --noEmit",
     "clean": "rimraf dist",
     "build": "rimraf dist && tsc -p . && rimraf dist/tsconfig.tsbuildinfo dist/*.test.d.ts dist/*.test.js dist/*.spec.d.ts dist/*.spec.js",
     "tsc": "tsc -p .",
-    "dev": "tsc -p . --watch"
+    "dev": "tsc -p . --watch",
+    "mocha": "rm -f *.js && ts-mocha \"*.{test,spec}.ts\""
   },
   "devDependencies": {
+    "@types/chai": "^4.3.20",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^24.10.9",
+    "chai": "^4.5.0",
+    "mocha": "^11.7.5",
     "rimraf": "^6.1.2",
+    "ts-mocha": "^11.1.0",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"
