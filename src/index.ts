@@ -107,4 +107,35 @@ export class TokenBucket {
   reset_all(): void {
     this.buckets.clear()
   }
+
+  get size(): number {
+    return this.buckets.size
+  }
+
+  /**
+   * Remove stale buckets that have fully recovered.
+   * Only prunes if initial >= capacity to avoid losing accumulated tokens.
+   * A bucket is pruned when it has full capacity and cooldown has passed.
+   * @returns number of buckets removed
+   */
+  prune(): number {
+    let capacity = this.capacity
+    if (this.initial < capacity) {
+      console.warn(
+        "TokenBucket.prune(): initial < capacity, won't prune to avoid losing accumulated tokens",
+      )
+      return 0 // Don't prune - would lose accumulated tokens
+    }
+    let removed = 0
+    for (let [key, bucket] of this.buckets) {
+      this.refill_bucket(bucket)
+      let cooldown_wait = this.calc_cooldown_wait_time(bucket)
+      if (bucket.tokens < capacity || cooldown_wait > 0) {
+        continue
+      }
+      this.buckets.delete(key)
+      removed++
+    }
+    return removed
+  }
 }
