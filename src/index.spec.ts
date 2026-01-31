@@ -62,6 +62,16 @@ describe('TokenBucket', () => {
       expect(() => bucket.consume('key1', -1)).to.throw('amount must be > 0')
     })
 
+    it('should throw error when amount is NaN', () => {
+      let bucket = new TokenBucket({ capacity: 5, interval: 1000 })
+      expect(() => bucket.consume('key1', NaN)).to.throw('amount must be a number')
+    })
+
+    it('should throw error when amount exceeds capacity', () => {
+      let bucket = new TokenBucket({ capacity: 5, interval: 1000 })
+      expect(() => bucket.consume('key1', 10)).to.throw('amount must be <= capacity')
+    })
+
     it('should consume multiple tokens', () => {
       let bucket = new TokenBucket({ capacity: 5, interval: 1000 })
       let result = bucket.consume('key1', 3)
@@ -118,6 +128,16 @@ describe('TokenBucket', () => {
     it('should throw error when amount is negative', () => {
       let bucket = new TokenBucket({ capacity: 5, interval: 1000 })
       expect(() => bucket.check('key1', -1)).to.throw('amount must be >= 0')
+    })
+
+    it('should throw error when amount is NaN', () => {
+      let bucket = new TokenBucket({ capacity: 5, interval: 1000 })
+      expect(() => bucket.check('key1', NaN)).to.throw('amount must be a number')
+    })
+
+    it('should throw error when amount exceeds capacity', () => {
+      let bucket = new TokenBucket({ capacity: 5, interval: 1000 })
+      expect(() => bucket.check('key1', 10)).to.throw('amount must be <= capacity')
     })
 
     it('should return same wait_time as consume would', () => {

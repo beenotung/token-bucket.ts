@@ -72,8 +72,14 @@ export class TokenBucket {
   }
 
   check(key: string, amount: number = 1): TokenBucketResult {
+    if (Number.isNaN(amount)) {
+      throw new Error('amount must be a number')
+    }
     if (amount < 0) {
       throw new Error('amount must be >= 0')
+    }
+    if (amount > this.capacity) {
+      throw new Error('amount must be <= capacity')
     }
     let bucket = this.get_bucket(key)
     this.refill_bucket(bucket)
@@ -85,8 +91,14 @@ export class TokenBucket {
   }
 
   consume(key: string, amount: number = 1): TokenBucketResult {
+    if (Number.isNaN(amount)) {
+      throw new Error('amount must be a number')
+    }
     if (amount <= 0) {
       throw new Error('amount must be > 0')
+    }
+    if (amount > this.capacity) {
+      throw new Error('amount must be <= capacity')
     }
     let bucket = this.get_bucket(key)
     this.refill_bucket(bucket)
