@@ -1,4 +1,5 @@
 import { expect } from 'chai'
+import sinon from 'sinon'
 import { TokenBucket } from './index'
 
 describe('TokenBucket', () => {
@@ -124,33 +125,39 @@ describe('TokenBucket', () => {
   })
 
   describe('refill', () => {
-    it('should refill tokens over time', async () => {
-      let bucket = new TokenBucket({ capacity: 2, interval: 100 })
-      bucket.consume('key1', 2) // use all tokens
-      await sleep(150) // should have 1.5 tokens after 150ms
-      let result = bucket.consume('key1', 2)
-      expect(result.wait_time).to.be.closeTo(50, 10) // should wait 50ms for the pending 0.5 tokens
+    let clock: sinon.SinonFakeTimers
+
+    beforeEach(() => {
+      clock = sinon.useFakeTimers()
     })
 
-    it('should not exceed capacity', async () => {
+    afterEach(() => {
+      clock.restore()
+    })
+
+    it('should refill tokens over time', () => {
       let bucket = new TokenBucket({ capacity: 2, interval: 100 })
-      await sleep(500) // wait long time
+      bucket.consume('key1', 2) // use all tokens
+      clock.tick(150) // should have 1.5 tokens after 150ms
+      let result = bucket.consume('key1', 2)
+      expect(result.wait_time).to.equal(50) // should wait 50ms for the pending 0.5 tokens
+    })
+
+    it('should not exceed capacity', () => {
+      let bucket = new TokenBucket({ capacity: 2, interval: 100 })
+      clock.tick(500) // wait long time
       bucket.consume('key1')
       bucket.consume('key1')
       let result = bucket.consume('key1')
-      expect(result.wait_time).to.be.closeTo(100, 10) // only 2 capacity, all used up
+      expect(result.wait_time).to.equal(100) // only 2 capacity, all used up
     })
 
-    it('should refill with custom fill rate', async () => {
+    it('should refill with custom fill rate', () => {
       let bucket = new TokenBucket({ capacity: 10, interval: 100, fill: 2 })
       bucket.consume('key1', 10) // use all tokens
-      await sleep(150) // wait 1.5 intervals, should get 3 tokens (1.5 * 2)
+      clock.tick(150) // wait 1.5 intervals, should get 3 tokens (1.5 * 2)
       let result = bucket.consume('key1', 3)
       expect(result.wait_time).to.equal(0)
     })
   })
 })
-
-function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
