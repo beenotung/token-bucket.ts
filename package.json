@@ -2,13 +2,9 @@
   "name": "token-bucket.ts",
   "version": "0.0.0",
   "type": "commonjs",
-  "description": "",
+  "description": "A simple, lightweight token bucket rate limiter for TypeScript/JavaScript.",
   "keywords": [],
-  "author": {
-    "name": "Beeno Tung",
-    "email": "aabbcc1241@yahoo.com.hk",
-    "url": "https://beeno-tung.surge.sh"
-  },
+  "author": "Beeno Tung <aabbcc1241@yahoo.com.hk> (https://beeno-tung.surge.sh)",
   "license": "BSD-2-Clause",
   "repository": {
     "type": "git",
