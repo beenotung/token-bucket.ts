@@ -3,7 +3,16 @@
   "version": "0.0.0",
   "type": "commonjs",
   "description": "A simple, lightweight token bucket rate limiter for TypeScript/JavaScript.",
-  "keywords": [],
+  "keywords": [
+    "token-bucket",
+    "rate-limit",
+    "rate-limiter",
+    "throttle",
+    "throttling",
+    "api-limit",
+    "cooldown",
+    "typescript"
+  ],
   "author": "Beeno Tung <aabbcc1241@yahoo.com.hk> (https://beeno-tung.surge.sh)",
   "license": "BSD-2-Clause",
   "repository": {
