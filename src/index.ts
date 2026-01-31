@@ -72,6 +72,9 @@ export class TokenBucket {
   }
 
   check(key: string, amount: number = 1): TokenBucketResult {
+    if (amount < 0) {
+      throw new Error('amount must be >= 0')
+    }
     let bucket = this.get_bucket(key)
     this.refill_bucket(bucket)
     let cooldown_wait = this.calc_cooldown_wait_time(bucket)
@@ -82,6 +85,9 @@ export class TokenBucket {
   }
 
   consume(key: string, amount: number = 1): TokenBucketResult {
+    if (amount <= 0) {
+      throw new Error('amount must be > 0')
+    }
     let bucket = this.get_bucket(key)
     this.refill_bucket(bucket)
     let cooldown_wait = this.calc_cooldown_wait_time(bucket)

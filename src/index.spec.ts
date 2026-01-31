@@ -48,6 +48,16 @@ describe('TokenBucket', () => {
       expect(result.wait_time).to.equal(0)
     })
 
+    it('should throw error when amount is 0', () => {
+      let bucket = new TokenBucket({ capacity: 5, interval: 1000 })
+      expect(() => bucket.consume('key1', 0)).to.throw('amount must be > 0')
+    })
+
+    it('should throw error when amount is negative', () => {
+      let bucket = new TokenBucket({ capacity: 5, interval: 1000 })
+      expect(() => bucket.consume('key1', -1)).to.throw('amount must be > 0')
+    })
+
     it('should consume multiple tokens', () => {
       let bucket = new TokenBucket({ capacity: 5, interval: 1000 })
       let result = bucket.consume('key1', 3)
@@ -93,6 +103,17 @@ describe('TokenBucket', () => {
       bucket.check('key1')
       let result = bucket.consume('key1')
       expect(result.wait_time).to.equal(0) // token still available
+    })
+
+    it('should allow amount 0 to check only cooldown', () => {
+      let bucket = new TokenBucket({ capacity: 1, interval: 1000 })
+      let result = bucket.check('key1', 0)
+      expect(result.wait_time).to.equal(0)
+    })
+
+    it('should throw error when amount is negative', () => {
+      let bucket = new TokenBucket({ capacity: 5, interval: 1000 })
+      expect(() => bucket.check('key1', -1)).to.throw('amount must be >= 0')
     })
 
     it('should return same wait_time as consume would', () => {
