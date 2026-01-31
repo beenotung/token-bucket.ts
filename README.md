@@ -85,6 +85,10 @@ bucket.prune()
 | `prune()`               | Remove fully-recovered buckets. Returns number removed. Only works when `initial >= capacity`        |
 | `size`                  | Get number of tracked buckets                                                                        |
 
+### Key Type
+
+Keys can be `string` or `number`. Numbers are converted to strings internally, so `123` and `'123'` refer to the same bucket.
+
 ### Return Value
 
 ```typescript

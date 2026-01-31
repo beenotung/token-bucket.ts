@@ -71,7 +71,8 @@ export class TokenBucket {
     return this.cooldown - elapsed
   }
 
-  check(key: string, amount: number = 1): TokenBucketResult {
+  check(key: string | number, amount: number = 1): TokenBucketResult {
+    key = String(key)
     if (Number.isNaN(amount)) {
       throw new Error('amount must be a number')
     }
@@ -90,7 +91,8 @@ export class TokenBucket {
     }
   }
 
-  consume(key: string, amount: number = 1): TokenBucketResult {
+  consume(key: string | number, amount: number = 1): TokenBucketResult {
+    key = String(key)
     if (Number.isNaN(amount)) {
       throw new Error('amount must be a number')
     }
@@ -112,8 +114,8 @@ export class TokenBucket {
     return { wait_time }
   }
 
-  reset(key: string): void {
-    this.buckets.delete(key)
+  reset(key: string | number): void {
+    this.buckets.delete(String(key))
   }
 
   reset_all(): void {

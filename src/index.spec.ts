@@ -108,6 +108,19 @@ describe('TokenBucket', () => {
       let check = bucket.check('key1', 1)
       expect(check.wait_time).to.equal(0) // can still consume 1
     })
+
+    it('should accept number as key', () => {
+      let bucket = new TokenBucket({ capacity: 1, interval: 1000 })
+      let result = bucket.consume(123)
+      expect(result.wait_time).to.equal(0)
+    })
+
+    it('should treat number and string as same key', () => {
+      let bucket = new TokenBucket({ capacity: 1, interval: 1000 })
+      bucket.consume(123) // use the token with number key
+      let result = bucket.consume('123') // try with string key
+      expect(result.wait_time).to.be.greaterThan(0) // should be blocked (same bucket)
+    })
   })
 
   describe('check', () => {
@@ -165,6 +178,14 @@ describe('TokenBucket', () => {
       bucket.reset('key1')
       let result = bucket.consume('key2')
       expect(result.wait_time).to.be.greaterThan(0)
+    })
+
+    it('should reset number key via string', () => {
+      let bucket = new TokenBucket({ capacity: 1, interval: 1000 })
+      bucket.consume(456)
+      bucket.reset('456') // reset using string
+      let result = bucket.consume(456) // consume with number
+      expect(result.wait_time).to.equal(0) // should be reset
     })
   })
 
