@@ -29,6 +29,16 @@ describe('TokenBucket', () => {
       let bucket = new TokenBucket({ capacity: 10, interval: 1000, initial: 5 })
       expect(bucket.initial).to.equal(5)
     })
+
+    it('should default cooldown to 0', () => {
+      let bucket = new TokenBucket({ capacity: 10, interval: 1000 })
+      expect(bucket.cooldown).to.equal(0)
+    })
+
+    it('should allow custom cooldown', () => {
+      let bucket = new TokenBucket({ capacity: 10, interval: 1000, cooldown: 500 })
+      expect(bucket.cooldown).to.equal(500)
+    })
   })
 
   describe('consume', () => {
@@ -158,6 +168,63 @@ describe('TokenBucket', () => {
       clock.tick(150) // wait 1.5 intervals, should get 3 tokens (1.5 * 2)
       let result = bucket.consume('key1', 3)
       expect(result.wait_time).to.equal(0)
+    })
+  })
+
+  describe('cooldown', () => {
+    let clock: sinon.SinonFakeTimers
+
+    beforeEach(() => {
+      clock = sinon.useFakeTimers()
+    })
+
+    afterEach(() => {
+      clock.restore()
+    })
+
+    it('should block consume during cooldown', () => {
+      let bucket = new TokenBucket({ capacity: 10, interval: 1000, cooldown: 100 })
+      bucket.consume('key1')
+      let result = bucket.consume('key1')
+      expect(result.wait_time).to.equal(100) // must wait for cooldown
+    })
+
+    it('should allow consume after cooldown', () => {
+      let bucket = new TokenBucket({ capacity: 10, interval: 1000, cooldown: 100 })
+      bucket.consume('key1')
+      clock.tick(100)
+      let result = bucket.consume('key1')
+      expect(result.wait_time).to.equal(0)
+    })
+
+    it('should return remaining cooldown time', () => {
+      let bucket = new TokenBucket({ capacity: 10, interval: 1000, cooldown: 100 })
+      bucket.consume('key1')
+      clock.tick(30)
+      let result = bucket.consume('key1')
+      expect(result.wait_time).to.equal(70) // 100 - 30
+    })
+
+    it('should track cooldown per key independently', () => {
+      let bucket = new TokenBucket({ capacity: 10, interval: 1000, cooldown: 100 })
+      bucket.consume('key1')
+      let result = bucket.consume('key2')
+      expect(result.wait_time).to.equal(0) // key2 has no cooldown yet
+    })
+
+    it('should return max of cooldown and token wait', () => {
+      let bucket = new TokenBucket({ capacity: 1, interval: 1000, cooldown: 50 })
+      bucket.consume('key1') // 0 tokens left, cooldown active
+      let result = bucket.consume('key1')
+      expect(result.wait_time).to.equal(1000) // token wait (1000) > cooldown (50)
+    })
+
+    it('should refill tokens during cooldown (independent)', () => {
+      let bucket = new TokenBucket({ capacity: 2, interval: 100, cooldown: 200 })
+      bucket.consume('key1', 2) // 0 tokens, cooldown starts
+      clock.tick(150) // 1.5 tokens refilled, cooldown still active (50ms left)
+      let result = bucket.check('key1')
+      expect(result.wait_time).to.equal(50) // blocked by cooldown, not tokens
     })
   })
 })

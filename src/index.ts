@@ -3,6 +3,7 @@ export type TokenBucketOptions = {
   interval: number // in milliseconds
   fill?: number // default 1
   initial?: number // default size of capacity
+  cooldown?: number // minimum time between consumes (in milliseconds), default to 0 (no cooldown)
 }
 
 export type TokenBucketResult = {
@@ -16,6 +17,7 @@ export type TokenBucketResult = {
 type BucketState = {
   tokens: number
   last_refill: number
+  last_consume: number
 }
 
 export class TokenBucket {
@@ -23,6 +25,7 @@ export class TokenBucket {
   interval: number // in milliseconds
   fill: number
   initial: number
+  cooldown: number // in milliseconds
   private buckets: Map<string, BucketState> = new Map()
 
   constructor(options: TokenBucketOptions) {
@@ -30,12 +33,17 @@ export class TokenBucket {
     this.interval = options.interval
     this.fill = options.fill ?? 1
     this.initial = options.initial ?? this.capacity
+    this.cooldown = options.cooldown ?? 0
   }
 
   private get_bucket(key: string): BucketState {
     let bucket = this.buckets.get(key)
     if (!bucket) {
-      bucket = { tokens: this.initial, last_refill: Date.now() }
+      bucket = {
+        tokens: this.initial,
+        last_refill: Date.now(),
+        last_consume: -Infinity,
+      }
       this.buckets.set(key, bucket)
     }
     return bucket
@@ -49,26 +57,39 @@ export class TokenBucket {
     bucket.last_refill = now
   }
 
-  private calc_wait_time(tokens: number, amount: number): number {
+  private calc_token_wait_time(tokens: number, amount: number): number {
     if (tokens >= amount) return 0
     let needed = amount - tokens
     return (needed / this.fill) * this.interval
   }
 
+  private calc_cooldown_wait_time(bucket: BucketState): number {
+    if (this.cooldown === 0) return 0
+    let now = Date.now()
+    let elapsed = now - bucket.last_consume
+    if (elapsed >= this.cooldown) return 0
+    return this.cooldown - elapsed
+  }
+
   check(key: string, amount: number = 1): TokenBucketResult {
     let bucket = this.get_bucket(key)
     this.refill_bucket(bucket)
+    let cooldown_wait = this.calc_cooldown_wait_time(bucket)
+    let token_wait = this.calc_token_wait_time(bucket.tokens, amount)
     return {
-      wait_time: this.calc_wait_time(bucket.tokens, amount),
+      wait_time: Math.max(cooldown_wait, token_wait),
     }
   }
 
   consume(key: string, amount: number = 1): TokenBucketResult {
     let bucket = this.get_bucket(key)
     this.refill_bucket(bucket)
-    let wait_time = this.calc_wait_time(bucket.tokens, amount)
+    let cooldown_wait = this.calc_cooldown_wait_time(bucket)
+    let token_wait = this.calc_token_wait_time(bucket.tokens, amount)
+    let wait_time = Math.max(cooldown_wait, token_wait)
     if (wait_time === 0) {
       bucket.tokens -= amount
+      bucket.last_consume = Date.now()
     }
     return { wait_time }
   }
